@@ -1,5 +1,6 @@
 import streamlit as st
 import io
+import plotly.express as px
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -8,29 +9,131 @@ from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import GaussianNB
-from sklearn.metrics import classification_report, roc_curve, auc
+from sklearn.metrics import classification_report, confusion_matrix, roc_curve, auc
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
 # Load the dataset
 df = pd.read_csv('artifacts\data_ingestion\Mobile-data-train.csv')
 
-# Helper function to display count plot
-def display_count_plot(column):
-    fig, ax = plt.subplots()
-    sns.countplot(x=column, data=df, ax=ax)
-    st.pyplot(fig)
+def display_Count_plot(Df, selected_column):
+    plt.figure(figsize=(12, 6))
+    sns.countplot(data=Df, y=selected_column, palette='Greens', orient='h')
+    plt.title(f'Count of {selected_column}', fontsize=16)
+    plt.xlabel('Count', fontsize=14)
+    plt.ylabel(selected_column, fontsize=14)
+    plt.xticks(fontsize=12)
+    plt.yticks(fontsize=12)
+    plt.tight_layout()
+    st.pyplot(plt)
 
-# Helper function to display KDE plot
-def display_kde_plot(column):
-    fig, ax = plt.subplots()
-    sns.kdeplot(df[column], ax=ax)
-    st.pyplot(fig)
+# Function to display the count plot per price range using Seaborn
+def display_count_plot_per_price_range(Df, selected_column):
+    plt.figure(figsize=(12, 6))
+    sns.countplot(data=Df, y=selected_column, palette='mako', orient='h', hue='price_range')
+    plt.title(f'Count of {selected_column} per Price Range', fontsize=16)
+    plt.xlabel('Count', fontsize=14)
+    plt.ylabel(selected_column, fontsize=14)
+    plt.xticks(fontsize=12)
+    plt.yticks(fontsize=12)
+    plt.tight_layout()
+    st.pyplot(plt)
 
-# Helper function to display box plot
-def display_box_plot(column):
-    fig, ax = plt.subplots()
-    sns.boxplot(df[column], ax=ax)
-    st.pyplot(fig)
+# Function to display the distribution plot using Seaborn
+def display_distribution_plot(Df, selected_column):
+    plt.figure(figsize=(10, 6))
+    sns.set_style('darkgrid')
+    sns.kdeplot(data=Df, x=selected_column, hue='price_range', fill=True, palette='Greens')
+    plt.title(f'Distribution of {selected_column}', fontsize=16)
+    plt.xlabel(selected_column, fontsize=14)
+    plt.ylabel('Density', fontsize=14)
+    plt.tight_layout()
+    st.pyplot(plt)
 
+# Function to display the box plot using Seaborn
+def display_box_plot(Df, selected_column):
+    plt.figure(figsize=(10, 6))
+    sns.set_style('darkgrid')
+    sns.boxplot(data=Df, x=selected_column, y='price_range', palette='light:#5A9', orient='h')
+    plt.title(f'Box Plot of {selected_column}', fontsize=16)
+    plt.xlabel(selected_column, fontsize=14)
+    plt.ylabel('Price Range', fontsize=14)
+    plt.tight_layout()
+    st.pyplot(plt)
+
+def display_contingency_table(Df, selected_column, selected_column2):
+    # Create a contingency table
+    contingency_table = pd.crosstab(index=Df[selected_column], columns=Df[selected_column2])
+
+    # Display the contingency table
+    st.write(contingency_table)
+
+def display_heatmap_plot(Df, selected_column, selected_column2):
+    # Create a contingency table
+    contingency_table = pd.crosstab(index=Df[selected_column], columns=Df[selected_column2])
+
+    # Create and display the heatmap plot
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(contingency_table, annot=True, cmap="YlGnBu", fmt="d")
+    plt.title(f'Heatmap Plot of {selected_column} vs {selected_column2}')
+    plt.xlabel(selected_column2)
+    plt.ylabel(selected_column)
+    st.pyplot(plt)
+
+def display_scatter_plot(Df, selected_column, selected_column2):
+    plt.figure(figsize=(10, 6))
+    sns.scatterplot(data=Df, x=selected_column, y=selected_column2,hue='price_range')
+    plt.title(f'Scatter Plot of {selected_column} vs {selected_column2}', fontsize=16)
+    plt.xlabel(selected_column, fontsize=14)
+    plt.ylabel(selected_column2, fontsize=14)
+    plt.tight_layout()
+    st.pyplot(plt)
+
+# Function to display the joint plot
+def display_joint_plot(Df, selected_column, selected_column2):
+    plt.figure(figsize=(10, 6))
+    sns.jointplot(data=Df, x=selected_column, y=selected_column2, kind='hex')
+    plt.xlabel(selected_column, fontsize=14)
+    plt.ylabel(selected_column2, fontsize=14)
+    plt.tight_layout()
+    st.pyplot(plt)
+
+def metrics_calculator(y_test, y_pred, model_name):
+    '''
+    This function calculates all desired performance metrics for a given model.
+    '''
+    result = pd.DataFrame(data=[accuracy_score(y_test, y_pred),
+                                precision_score(y_test, y_pred, average='macro'),
+                                recall_score(y_test, y_pred, average='macro'),
+                                f1_score(y_test, y_pred, average='macro')],
+                          index=['Accuracy','Precision','Recall','F1-score'],
+                          columns = [model_name])
+    return result
+
+# ROC Curve Plot
+def roc_curve_plot(y_actual, y_predicted_probs, figsize=(5, 4), title=None, legend_loc='best'):
+                fpr = {}
+                tpr = {}
+                thres = {}
+                roc_auc = {}
+
+                n_class = y_predicted_probs.shape[1]
+                for i in range(n_class):
+                    fpr[i], tpr[i], thres[i] = roc_curve(y_actual == i, y_predicted_probs[:, i])
+                    roc_auc[i] = auc(fpr[i], tpr[i])
+
+                plt.figure(figsize=figsize)
+                for i in range(n_class):
+                    plt.plot(fpr[i], tpr[i], linewidth=1, label='Class {}: AUC={:.2f}'.format(i, roc_auc[i]))
+
+                plt.plot([0, 1], [0, 1], '--', linewidth=0.5)
+                plt.xlabel('False Positive Rate')
+                plt.ylabel('True Positive Rate')
+                plt.xlim([0, 1])
+                plt.ylim([0, 1.05])
+                if title is not None:
+                    plt.title(title)
+                plt.legend(loc=legend_loc)
+                st.pyplot(plt)
 
 # Sidebar options
 st.sidebar.markdown(
@@ -164,7 +267,7 @@ elif option == "Dataset":
             .bar(subset=["mean"], color='#00BFC4'))
 
 
-elif option == "Analysis":
+if option == "Analysis":
     analysis_option = st.sidebar.selectbox("Select Analysis Type", ["Univariate Analysis", "Bivariate Analysis"])
     
     if analysis_option == "Univariate Analysis":
@@ -175,39 +278,61 @@ elif option == "Analysis":
         continuous_columns = [col for col in df.columns if df[col].nunique() >= 25]
         
         if analysis_type == "Categorical":
-            st.subheader("Count Plot for Categorical Data")
+            st.subheader("Count plot and Count Chart for Categorical Data")
             selected_column = st.selectbox("Select Column", categorical_columns)
-            display_count_plot(selected_column)
+            
+            st.subheader("Count Plot")
+            display_Count_plot(df, selected_column)
+            
+            st.subheader("Count Plot per Price Range")
+            display_count_plot_per_price_range(df, selected_column)
         
         elif analysis_type == "Continuous":
-            st.subheader("KDE Plot for Continuous Data")
-            selected_column_kde = st.selectbox("Select Column for KDE Plot", continuous_columns)
-            display_kde_plot(selected_column_kde)
+            st.subheader("Plots for Continuous Data")
+            selected_column = st.selectbox("Select Column for Plots", continuous_columns)
+            
+            st.subheader("Distribution Plot")
+            display_distribution_plot(df, selected_column)
 
-            st.subheader("Box Plot for Continuous Data")
-            selected_column_box = st.selectbox("Select Column for Box Plot", continuous_columns)
-            display_box_plot(selected_column_box)
+            st.subheader("Box Plot")
+            display_box_plot(df, selected_column)
+            
+
     
     elif analysis_option == "Bivariate Analysis":
         st.title("Bivariate Analysis")
         analysis_type = st.sidebar.selectbox("Select Data Type", ["Categorical", "Continuous"])
         
         categorical_columns = [col for col in df.columns if df[col].nunique() < 25]
+        continuous_columns = [col for col in df.columns if df[col].nunique() >= 25]
         
         if analysis_type == "Categorical":
-            st.subheader("Count Plot for Categorical Data")
-            selected_column1 = st.selectbox("Select Column 1", categorical_columns)
-            selected_column2 = st.selectbox("Select Column 2", categorical_columns)
-            fig, ax = plt.subplots()
-            sns.countplot(x=selected_column1, hue=selected_column2, data=df, ax=ax)
-            st.pyplot(fig)
+            st.subheader("Contingency Table and Heatmap Plot")
+            selected_column = st.selectbox("Select Column", categorical_columns)
+            selected_column2 = st.selectbox("Select Column2", categorical_columns)
 
+            st.subheader("Contingency Table")
+            display_contingency_table(df, selected_column, selected_column2)
+
+            st.subheader("Heatmap Plot")
+            display_heatmap_plot(df, selected_column, selected_column2)
+
+            
         elif analysis_type == "Continuous":
-            st.write("Continuous bivariate analysis is not implemented yet.")
+            st.subheader("Scatter Plot and Joint Plot")
+            selected_column = st.selectbox("Select Column", continuous_columns)
+            selected_column2 = st.selectbox("Select Column2", continuous_columns)
+
+            st.subheader("Scatter Plot")
+            display_scatter_plot(df, selected_column, selected_column2)
+
+            st.subheader("Joint Plot")
+            display_joint_plot(df, selected_column, selected_column2)
+
 
 elif option == "Model":
     st.title("Model Training")
-    model_option = st.sidebar.selectbox("Select Model", ["SVM", "Decision Tree", "Random Forest", "Naive Bayes"])
+    model_option = st.sidebar.selectbox("Select Model", ["SVM", "Decision Tree", "Random Forest"])
     
     if model_option == "SVM":
         C = st.sidebar.slider("C (Regularization parameter)", 0.01, 10.0)
@@ -226,9 +351,6 @@ elif option == "Model":
         max_depth = st.sidebar.slider("Max Depth", 1, 32)
         params = {"n_estimators": n_estimators, "criterion": criterion, "max_depth": max_depth}
     
-    elif model_option == "Naive Bayes":
-        params = {}
-    
     test_size = st.sidebar.selectbox("Test Size (%)", [15, 20, 25, 30, 35]) / 100.0
     
     if st.sidebar.button("Train"):
@@ -240,39 +362,34 @@ elif option == "Model":
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=42)
             
             if model_option == "SVM":
-                model = SVC(**params)
+                model = SVC(**params, probability=True)
             elif model_option == "Decision Tree":
                 model = DecisionTreeClassifier(**params)
             elif model_option == "Random Forest":
                 model = RandomForestClassifier(**params)
-            elif model_option == "Naive Bayes":
-                model = GaussianNB()
-            
+
             model.fit(X_train, y_train)
             y_pred = model.predict(X_test)
             
+            # Confusion Matrix Heatmap
+            st.write("### Confusion Matrix")
+            cm = confusion_matrix(y_test, y_pred)
+            fig, ax = plt.subplots()
+            sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax)
+            ax.set_xlabel('Predicted')
+            ax.set_ylabel('Actual')
+            ax.set_title('Confusion Matrix')
+            st.pyplot(fig)
+            
             st.write("### Classification Report")
             st.text(classification_report(y_test, y_pred))
-            
-            if model_option != "Naive Bayes":  # ROC curve is generally not used with Naive Bayes
-                st.write("### ROC Curve")
-                y_score = model.predict_proba(X_test)[:, 1]
-                fpr, tpr, _ = roc_curve(y_test, y_score, pos_label=1)
-                roc_auc = auc(fpr, tpr)
-                fig, ax = plt.subplots()
-                ax.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (area = {roc_auc:.2f})')
-                ax.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
-                ax.set_xlim([0.0, 1.0])
-                ax.set_ylim([0.0, 1.05])
-                ax.set_xlabel('False Positive Rate')
-                ax.set_ylabel('True Positive Rate')
-                ax.set_title('Receiver Operating Characteristic')
-                ax.legend(loc="lower right")
-                st.pyplot(fig)
 
-            st.write("### Scatter Plot of Predictions")
-            fig, ax = plt.subplots()
-            ax.scatter(range(len(y_test)), y_test, color='blue', label='Original')
-            ax.scatter(range(len(y_test)), y_pred, color='red', alpha=0.5, label='Predicted')
-            ax.legend(loc='best')
-            st.pyplot(fig)
+            st.write("### Performace Matrix")
+            BaseRF_result = metrics_calculator(y_test, y_pred, model)
+            BaseRF_result
+
+            # ROC Curve
+            
+            st.write("### ROC Curve")
+            y_pred_prob = model.predict_proba(X_test)
+            roc_curve_plot(y_test, y_pred_prob, title='ROC Curve for ' + model_option)
