@@ -141,7 +141,7 @@ st.sidebar.markdown(
     unsafe_allow_html=True
 )
 
-option = st.sidebar.radio("Select an option", ["About", "Dataset", "Analysis", "Model"])
+option = st.sidebar.radio("Select an option", ["About", "Dataset", "Analysis", "Model","Prediction"])
 
 if option == "About":
     st.markdown(
@@ -393,3 +393,86 @@ elif option == "Model":
             st.write("### ROC Curve")
             y_pred_prob = model.predict_proba(X_test)
             roc_curve_plot(y_test, y_pred_prob, title='ROC Curve for ' + model_option)
+
+            st.session_state['model'] = model
+
+elif option == "Prediction":
+    st.title("Predict Mobile Price Range")
+
+    # Create a form for user input
+    with st.form(key='prediction_form'):
+        st.write("Enter the values for the features to predict the price range:")
+
+        # Define input fields for each feature
+        battery_power = st.number_input("Battery Power (500 - 2000)", min_value=500, max_value=2000)
+        blue = st.selectbox("Bluetooth", ["No", "Yes"])
+        clock_speed = st.number_input("Clock Speed (0.5 - 3.0)", min_value=0.5, max_value=3.0, format="%.2f")
+        dual_sim = st.selectbox("Dual SIM", ["No", "Yes"])
+        fc = st.number_input("Front Camera (0 - 19 Megapixels)", min_value=0, max_value=19)
+        four_g = st.selectbox("4G", ["No", "Yes"])
+        int_memory = st.number_input("Internal Memory (2 - 64 GB)", min_value=2, max_value=64)
+        m_dep = st.number_input("Mobile Depth (0.1 - 1.0 cm)", min_value=0.1, max_value=1.0, format="%.2f")
+        mobile_wt = st.number_input("Mobile Weight (80 - 200 grams)", min_value=80, max_value=200)
+        n_cores = st.number_input("Number of Cores (1 - 8)", min_value=1, max_value=8)
+        pc = st.number_input("Primary Camera (0 - 20 Megapixels)", min_value=0, max_value=20)
+        px_height = st.number_input("Pixel Resolution Height (0 - 1960)", min_value=0, max_value=1960)
+        px_width = st.number_input("Pixel Resolution Width (500 - 1998)", min_value=500, max_value=1998)
+        ram = st.number_input("RAM (256 - 3998 MB)", min_value=256, max_value=3998)
+        sc_h = st.number_input("Screen Height (5 - 19 cm)", min_value=5, max_value=19)
+        sc_w = st.number_input("Screen Width (0 - 18 cm)", min_value=0, max_value=18)
+        talk_time = st.number_input("Talk Time (2 - 20 hours)", min_value=2, max_value=20)
+        three_g = st.selectbox("3G", ["No", "Yes"])
+        touch_screen = st.selectbox("Touch Screen", ["No", "Yes"])
+        wifi = st.selectbox("Wi-Fi", ["No", "Yes"])
+
+        # Submit button
+        submit_button = st.form_submit_button(label='Predict')
+
+    # Perform prediction using the trained model
+    if submit_button:
+        # Convert categorical inputs to numerical values
+        blue = 1 if blue == "Yes" else 0
+        dual_sim = 1 if dual_sim == "Yes" else 0
+        four_g = 1 if four_g == "Yes" else 0
+        three_g = 1 if three_g == "Yes" else 0
+        touch_screen = 1 if touch_screen == "Yes" else 0
+        wifi = 1 if wifi == "Yes" else 0
+
+        input_data = pd.DataFrame({
+            'battery_power': [battery_power],
+            'blue': [blue],
+            'clock_speed': [clock_speed],
+            'dual_sim': [dual_sim],
+            'fc': [fc],
+            'four_g': [four_g],
+            'int_memory': [int_memory],
+            'm_dep': [m_dep],
+            'mobile_wt': [mobile_wt],
+            'n_cores': [n_cores],
+            'pc': [pc],
+            'px_height': [px_height],
+            'px_width': [px_width],
+            'ram': [ram],
+            'sc_h': [sc_h],
+            'sc_w': [sc_w],
+            'talk_time': [talk_time],
+            'three_g': [three_g],
+            'touch_screen': [touch_screen],
+            'wifi': [wifi]
+        })
+
+        # Use the trained model to predict the price range
+        if 'model' in st.session_state:
+            model = st.session_state['model']
+            prediction = model.predict(input_data)[0]
+            price_range_mapping = {
+            0: "Low Cost",
+            1: "Medium Cost",
+            2: "High Cost",
+            3: "Very High Cost"
+            }
+            predicted_label = price_range_mapping[prediction]
+            st.markdown(f"<h2>Predicted Price Range</h2>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style='color: green;'> {predicted_label}</h2>", unsafe_allow_html=True)
+        else:
+            st.write("Model not trained yet. Please train the model in the 'Model' section.")
