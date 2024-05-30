@@ -46,7 +46,7 @@ The Car Price Range Predictor is a project aimed at predicting the price range o
 
 ## Features
 
-- Data preprocessing and feature engineering
+- Data preprocessing 
 - Multiple machine learning models for classification
 - Model evaluation with various metrics
 - Confusion matrix and ROC curve visualization
