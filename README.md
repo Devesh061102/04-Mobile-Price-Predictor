@@ -1,6 +1,7 @@
-# Car Price Range Predictor
+# Mobile Price Range Predictor
 
-The Car Price Range Predictor is a project aimed at predicting the price range of cars based on various features such as engine size, horsepower, and other specifications. This tool uses machine learning algorithms to classify cars into different price categories.
+The price of a cell phone varies widely depending on its specifications. In this project, we explore the factors that affect cell phone prices and predict price ranges for new samples based on the best model.
+
 
 ## Streamlit App
 
@@ -30,31 +31,48 @@ The Car Price Range Predictor is a project aimed at predicting the price range o
 ![Prediction](https://github.com/Devesh061102/04-Mobile-Price-Predictor/blob/main/Screenshots/Screenshot%202024-05-28%20191434.png?raw=true)
 - *Prediction results display. After training the model, users can input new car features to get the predicted price range. This screen shows the prediction output.*
 
-## Roadmap
 
-**Objective**: The main objective of the Car Price Range Predictor is to accurately classify cars into price ranges based on their features. This tool can help potential car buyers and sellers to better understand the market value of cars.
+## 📱 Overview
 
-**Data Collection**: The dataset used in this project contains various features of cars such as engine size, horsepower, and other specifications.
+This project includes the following steps:
 
-**Feature Engineering**: Relevant features are selected and preprocessed to be used in the machine learning models.
+1. **Preprocessing**
+2. **Data Cleaning**
+3. **Exploratory Data Analysis (EDA)**
+4. **Data Preparation for Model Training**
+5. **Training and Predicting with Various Classification Models**
+6. **Model Evaluation**
+7. **Using Ensemble Learning Methods**
 
-**Modeling**: The project uses multiple machine learning models such as Support Vector Machines (SVM), Decision Trees, and Random Forests to classify the cars into different price ranges.
+## 📱 Objective
 
-**Evaluation**: The models are evaluated based on metrics like accuracy, precision, recall, and F1-score. A confusion matrix and ROC curves are also used for evaluation.
+Our objective is to predict the price range of a mobile phone by building a model that takes into account various features provided in the dataset. We will use supervised learning methods such as Decision Trees (DTs), Random Forest, and Support Vector Machine (SVM) to determine the best model for this problem.
 
-**User Interface**: The project has a user-friendly interface built with Streamlit, where users can input car features and get the predicted price range. It also provides various visualizations to help users understand the model's performance.
+## 📱 Problem Statement
 
-## Features
+We aim to classify the target variable "Price Range" based on the data and attribute information. Our goal is to develop a model that accurately predicts the price range of mobile phones.
 
-- Data preprocessing 
-- Multiple machine learning models for classification
-- Model evaluation with various metrics
-- Confusion matrix and ROC curve visualization
-- User-friendly interface built with Streamlit
+## 📔 Dataset
 
-## Lessons Learned
+The dataset used for this project is available on Kaggle: [Mobile Price Classification](https://www.kaggle.com/iabhishekofficial/mobile-price-classification).
 
-Through the development of the Car Price Range Predictor, several key lessons were learned. These include the importance of feature selection and engineering, the need for robust model evaluation techniques, and the value of user-friendly interface design to enhance usability. Additionally, understanding the trade-offs between different machine learning models and the importance of hyperparameter tuning were highlighted. Continuous improvement processes, informed by user feedback and advancements in machine learning, were essential for refining the tool's functionality and ensuring its long-term effectiveness.
+## 📱 Project Structure
+
+- **Preprocessing:** Initial steps to clean and prepare the data for analysis.
+- **Data Cleaning:** Removing inconsistencies and handling missing values.
+- **Exploratory Data Analysis (EDA):** Understanding the data through visualization and statistical analysis.
+- **Data Preparation:** Transforming the data into a suitable format for model training.
+- **Model Training:** Using various classification models to train on the dataset.
+  - **Decision Trees (DTs)**
+  - **Random Forest**
+  - **Support Vector Machine (SVM)**
+- **Model Evaluation:** Assessing model performance using metrics like accuracy, precision, recall, and F1-score. Visualization tools such as confusion matrix and ROC curves are also used.
+- **Ensemble Learning Methods:** Applying techniques like bagging and boosting to improve model performance.
+- **User Interface:** Building a user-friendly interface using Streamlit where users can input mobile phone features and get the predicted price range.
+
+
+## 📱 Conclusion
+This project successfully demonstrates the process of predicting mobile phone price ranges based on various features using supervised learning techniques. By exploring and analyzing the dataset, preprocessing the data, and employing multiple classification models, we were able to build a robust predictive model.
 
 ## Authors
 
